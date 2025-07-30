@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './PatientHistory.css';
 
+import { fetchAuthSession } from '@aws-amplify/auth';
+
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -16,7 +18,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-const API_URL = 'https://3l0dyz6m34.execute-api.us-east-1.amazonaws.com/prod/telemetry';
+const API_URL = '';
 
 function PatientHistory({ user, signOut }) {
   const [data, setData] = useState([]);
@@ -25,12 +27,25 @@ function PatientHistory({ user, signOut }) {
   const [alerts, setAlerts] = useState([]);
 
   useEffect(() => {
-    axios.get(API_URL)
-      .then(res => {
+    const fetchData = async () => {
+      try {
+        const session = await fetchAuthSession();
+        const token = session.tokens?.idToken?.toString();
+
+        const res = await axios.get(API_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
         setData(res.data);
         setAlerts(res.data.filter(d => d.status !== 'OK'));
-      })
-      .catch(err => console.error('API error:', err));
+      } catch (err) {
+        console.error('API error (secured):', err.response?.data || err.message);
+      }
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -75,8 +90,6 @@ function PatientHistory({ user, signOut }) {
 
   return (
     <div className="App">
-     
-
       <div className="history-container">
         <h1 className="page-title">📊 Patient Analytics</h1>
 
