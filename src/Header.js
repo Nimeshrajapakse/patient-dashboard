@@ -8,9 +8,10 @@ const Header = ({ user, signOut }) => {
 
   return (
     <header className="dashboard-header">
-      <div className="logo">
-        <span role="img" aria-label="logo">🏥</span> MediSys Dashboard
-      </div>
+      <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+  <span role="img" aria-label="logo">🏥</span> MediSys Dashboard
+</div>
+
 
       <div className="header-actions">
         <button onClick={() => navigate('/history')}>Patient History</button>

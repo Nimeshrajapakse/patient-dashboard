@@ -1,9 +1,6 @@
-// PatientHistory.js
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './PatientHistory.css';
-
-import { fetchAuthSession } from '@aws-amplify/auth';
 
 import { Line } from 'react-chartjs-2';
 import {
@@ -18,57 +15,65 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-const API_URL = '';
+const API_BASE_URL = 'https://87482chyli.execute-api.us-east-1.amazonaws.com/prod/getuser';
 
-function PatientHistory({ user, signOut }) {
-  const [data, setData] = useState([]);
+function PatientHistory() {
+  const [inputId, setInputId] = useState('');
   const [patientId, setPatientId] = useState('');
-  const [filtered, setFiltered] = useState([]);
+  const [data, setData] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const session = await fetchAuthSession();
-        const token = session.tokens?.idToken?.toString();
+  const fetchData = async () => {
+    if (!inputId) return;
+    try {
+      const res = await axios.get(`${API_BASE_URL}/${inputId}`);
 
-        const res = await axios.get(API_URL, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+      const sortedData = res.data.sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+      );
 
-        setData(res.data);
-        setAlerts(res.data.filter(d => d.status !== 'OK'));
-      } catch (err) {
-        console.error('API error (secured):', err.response?.data || err.message);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    if (patientId) {
-      const patientData = data
-        .filter(d => d.patient_id === patientId)
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      setFiltered(patientData);
-    } else {
-      setFiltered([]);
+      setData(sortedData);
+      setPatientId(inputId);
+      setAlerts(sortedData.filter(d => d.status !== 'OK'));
+      setError('');
+    } catch (err) {
+      console.error('API error:', err.response?.data || err.message);
+      setError('Patient not found or API error.');
+      setData([]);
+      setPatientId('');
+      setAlerts([]);
     }
-  }, [patientId, data]);
+  };
 
-  const uniquePatientIds = [...new Set(data.map(d => d.patient_id))];
-  const avgHR = filtered.length ? (filtered.reduce((sum, d) => sum + d.heart_rate, 0) / filtered.length).toFixed(1) : '—';
-  const avgSpO2 = filtered.length ? (filtered.reduce((sum, d) => sum + d.oxygen_saturation, 0) / filtered.length).toFixed(1) : '—';
-  const latestAlert = alerts.filter(d => d.patient_id === patientId).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+  const avgHR = data.length
+    ? (data.reduce((sum, d) => sum + d.heart_rate, 0) / data.length).toFixed(1)
+    : '—';
+
+  const avgSpO2 = data.length
+    ? (data.reduce((sum, d) => sum + d.oxygen_saturation, 0) / data.length).toFixed(1)
+    : '—';
+
+  const latestAlert = alerts
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+  const formattedAlertTime = latestAlert
+    ? new Date(latestAlert.timestamp).toLocaleString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
+    : '—';
 
   const hrChart = {
-    labels: filtered.map(d => new Date(d.timestamp).toLocaleTimeString()),
+    labels: data.map(d => new Date(d.timestamp).toLocaleTimeString()),
     datasets: [{
       label: 'Heart Rate',
-      data: filtered.map(d => d.heart_rate),
+      data: data.map(d => d.heart_rate),
       borderColor: '#ff4d6d',
       backgroundColor: 'rgba(255, 77, 109, 0.1)',
       tension: 0.4,
@@ -77,10 +82,10 @@ function PatientHistory({ user, signOut }) {
   };
 
   const spo2Chart = {
-    labels: filtered.map(d => new Date(d.timestamp).toLocaleTimeString()),
+    labels: data.map(d => new Date(d.timestamp).toLocaleTimeString()),
     datasets: [{
       label: 'SpO2',
-      data: filtered.map(d => d.oxygen_saturation),
+      data: data.map(d => d.oxygen_saturation),
       borderColor: '#00b4d8',
       backgroundColor: 'rgba(0, 180, 216, 0.1)',
       tension: 0.4,
@@ -93,15 +98,17 @@ function PatientHistory({ user, signOut }) {
       <div className="history-container">
         <h1 className="page-title">📊 Patient Analytics</h1>
 
-        <div className="selector">
-          <label>Select Patient:</label>
-          <select value={patientId} onChange={e => setPatientId(e.target.value)}>
-            <option value="">-- Choose --</option>
-            {uniquePatientIds.map(id => (
-              <option key={id} value={id}>{id}</option>
-            ))}
-          </select>
+        <div className="searchbar">
+          <input
+            type="text"
+            placeholder="Enter Patient ID"
+            value={inputId}
+            onChange={e => setInputId(e.target.value)}
+          />
+          <button onClick={fetchData}>Search</button>
         </div>
+
+        {error && <p className="error">{error}</p>}
 
         {patientId && (
           <>
@@ -116,7 +123,7 @@ function PatientHistory({ user, signOut }) {
               </div>
               <div className="stat-card">
                 <h4>Last Alert</h4>
-                <p>{latestAlert?.timestamp || '—'}</p>
+                <p>{formattedAlertTime}</p>
               </div>
             </div>
 
