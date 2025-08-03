@@ -15,6 +15,7 @@ const Header = ({ user, signOut }) => {
 
       <div className="header-actions">
         <button onClick={() => navigate('/history')}>Patient History</button>
+        <button onClick={() => navigate('/adduser')}>Add Patient</button>
         <button onClick={signOut}>Sign Out</button>
       </div>
 

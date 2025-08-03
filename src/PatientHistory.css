@@ -54,3 +54,19 @@
 .chart-section {
   margin-bottom: 2rem;
 }
+
+.download-button {
+  background-color: #0077b6;
+  color: white;
+  padding: 8px 16px;
+  margin: 12px 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.download-button:hover {
+  background-color: #023e8a;
+}
+

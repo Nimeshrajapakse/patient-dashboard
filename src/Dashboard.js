@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { fetchAuthSession } from '@aws-amplify/auth';
 import './App.css';
 
 const API_URL = 'https://3l0dyz6m34.execute-api.us-east-1.amazonaws.com/prod/telemetry';
@@ -9,33 +8,27 @@ function Dashboard({ user, signOut }) {
   const [telemetry, setTelemetry] = useState([]);
   const [alerts, setAlerts] = useState([]);
 
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  const fetchData = async () => {
-    try {
-      const session = await fetchAuthSession();
-      const token = session.tokens?.idToken?.toString();
-
-      if (!cancelled) {
-        const res = await axios.get(API_URL, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setTelemetry(res.data);
-        setAlerts(res.data.filter(d => d.status !== 'OK'));
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(API_URL); // ✅ Removed Authorization header
+        if (!cancelled) {
+          setTelemetry(res.data);
+          setAlerts(res.data.filter(d => d.status !== 'OK'));
+        }
+      } catch (err) {
+        console.error('Fetch error:', err.response?.data || err.message);
       }
-    } catch (err) {
-      console.error('Secure fetch error:', err.response?.data || err.message);
-    }
-  };
+    };
 
-  fetchData();
+    fetchData();
 
-  return () => {
-    cancelled = true;
-  };
-}, []);
-
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const uniquePatientIds = new Set(telemetry.map(d => d.patient_id));
   const totalPatients = uniquePatientIds.size;
@@ -110,5 +103,3 @@ useEffect(() => {
 }
 
 export default Dashboard;
-
-
