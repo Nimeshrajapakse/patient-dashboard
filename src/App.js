@@ -9,6 +9,7 @@ import Dashboard from './Dashboard';
 import PatientHistory from './PatientHistory';
 import Header from './Header';
 import AddUser from './Adduser';
+import PatientManagement from './Patientmanagement';
 
 
 function App({ user, signOut }) {
@@ -21,6 +22,7 @@ function App({ user, signOut }) {
         <Route path="/" element={<Dashboard user={user} signOut={signOut} />} />
         <Route path="/history" element={<PatientHistory user={user} signOut={signOut} />} />
         <Route path="/adduser" element={<AddUser user={user} signOut={signOut} />} />
+        <Route path="/patient-management" element={<PatientManagement user={user} signOut={signOut} />} />
 
         
       </Routes>

@@ -1,49 +1,53 @@
 .dashboard-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background-color: #0f3460;
-  color: white;
-  padding: 1rem 2rem;
-  font-family: 'Segoe UI', sans-serif;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  justify-content: space-between;
+  background-color: #0d1b2a;
+  color: #ffffff;
+  padding: 12px 24px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-  font-size: 1.4rem;
-  font-weight: bold;
-}
-
-.header-actions {
   display: flex;
-  gap: 1rem;
-}
-
-.header-actions button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  background-color: #00b4d8;
-  color: white;
+  align-items: center;
+  font-size: 20px;
   font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
 }
 
-.header-actions button:hover {
-  background-color: #0077b6;
+.logo-text {
+  margin-left: 8px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 12px;
+}
+
+.nav-button {
+  background-color: #1b263b;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-button:hover {
+  background-color: #415a77;
+}
+
+.logout {
+  background-color: #b00020;
+}
+
+.logout:hover {
+  background-color: #d32f2f;
 }
 
 .username {
-  font-size: 1rem;
-}
-
-.dashboard-header {
-  padding: 1rem 2rem;
-  background-color: #0f3460;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
+  font-size: 14px;
+  color: #a9bcd0;
 }

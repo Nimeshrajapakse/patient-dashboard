@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './PatientHistory.css';
+import { getAuthHeaders, handleAuthError } from './utils/auth.js'; // Add this import
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -18,7 +19,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-const API_BASE_URL = 'https://87482chyli.execute-api.us-east-1.amazonaws.com/prod/getuser';
+const API_BASE_URL = 'https://3l0dyz6m34.execute-api.us-east-1.amazonaws.com/prod/getuser';
 
 function PatientHistory() {
   const [inputId, setInputId] = useState('');
@@ -31,7 +32,9 @@ function PatientHistory() {
   const fetchData = async () => {
     if (!inputId) return;
     try {
-      const res = await axios.get(`${API_BASE_URL}/${inputId}`);
+      const headers = await getAuthHeaders(); // Add JWT headers
+      const res = await axios.get(`${API_BASE_URL}/${inputId}`, { headers });
+      
       const allData = res.data.sort(
         (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
       );
@@ -44,6 +47,7 @@ function PatientHistory() {
       setFilteredData(recent);
       setAlerts(recent.filter(d => d.status !== 'OK'));
     } catch (err) {
+      handleAuthError(err); // Handle authentication errors
       console.error('API error:', err.response?.data || err.message);
       setError('Patient not found or API error.');
       setData([]);
@@ -105,7 +109,7 @@ function PatientHistory() {
   const downloadPDF = () => {
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text(`📊 Patient Analytics Report`, 14, 20);
+    doc.text(`Patient Analytics Report`, 14, 20);
 
     doc.setFontSize(12);
     doc.text(`Patient ID: ${patientId}`, 14, 30);
